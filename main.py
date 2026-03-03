@@ -3,8 +3,8 @@ from datetime import datetime
 
 def check_luhn(card_number):
     """
-    Проверка номера карты по алгоритму Луна.
-    Принимает строку, состоящую только из цифр.
+    Checking the card number using the Luna algorithm.
+    Accepts a string consisting only of numbers.
     """
     digits = [int(d) for d in card_number]
     checksum = 0
@@ -21,7 +21,8 @@ def check_luhn(card_number):
 
     return checksum % 10 == 0
 
-# --- Роль 1: Финансовый сыщик ---
+
+# Role 1: Financial Detective
 
 def find_and_validate_credit_cards(text):
     """
@@ -31,20 +32,18 @@ def find_and_validate_credit_cards(text):
     result = {'valid': [], 'invalid': []}
 
     try:
-        # Регулярка для потенциальных карт:
-        # 1. Обычные цифры с разделителями (13-19 цифр)
+        # Potential cards
         card_pattern = re.compile(r'(?:\b\d{4}[ -]?\d{4}[ -]?\d{4}[ -]?\d{1,4}\b)')
 
-        # 2. Смешанные с буквами (для отлова артефактов типа 22024567АБСВ4765)
+        # Cards mixed with letters
         mixed_pattern = re.compile(r'\b[0-9A-Za-zА-Яа-я-]{15,20}\b')
 
         found_tokens = set()
 
-        # Сначала ищем четкие структуры
+        # Сlear structures
         for match in card_pattern.finditer(text):
             raw_card = match.group(0)
             found_tokens.add(raw_card)
-            # Очищаем только для проверки алгоритмом, но сохраняем raw_card
             clean_card = re.sub(r'\D', '', raw_card)
 
             if 13 <= len(clean_card) <= 19:
@@ -53,16 +52,15 @@ def find_and_validate_credit_cards(text):
                 else:
                     result['invalid'].append(raw_card)
 
-        # Теперь ищем мусорные данные, похожие на карты, но с буквами
+        # junk data
         for match in mixed_pattern.finditer(text):
             token = match.group(0)
             if token in found_tokens:
                 continue
 
-            # Проверяем, похоже ли это на карту (много цифр, но есть буквы)
+            # Does it look like a card
             digits_count = sum(c.isdigit() for c in token)
             if digits_count > 10 and re.search(r'[a-zA-Zа-яА-Я]', token):
-                # Это "похоже" на карту, но с буквами -> invalid
                 result['invalid'].append(token)
 
     except Exception as e:
@@ -71,12 +69,12 @@ def find_and_validate_credit_cards(text):
     return result
 
 
-# --- Роль 5: Аналитик логов ---
+# Role 5: Log Analyst
 
 def analyze_logs(text):
     """
-    Анализирует логи веб-сервера на предмет атак.
-    Использует скомпилированные регулярные выражения.
+    Analyzes web server logs for attacks.
+    Uses compiled regular expressions.
     """
     result = {
         'sql_injections': [],
@@ -113,17 +111,15 @@ def analyze_logs(text):
     return result
 
 
-
 def check_inn_checksum(inn_str):
     """
-    Проверка контрольных цифр ИНН по алгоритму ФНС.
+    Checking the TIN's control digits using the FTS algorithm.
     """
     try:
         digits = [int(d) for d in inn_str]
         length = len(digits)
 
         if length == 10:
-            # Юрлица
             weights = [2, 4, 10, 3, 5, 9, 4, 6, 8]
             checksum = sum(w * d for w, d in zip(weights, digits[:-1])) % 11
             if checksum == 10:
@@ -131,7 +127,6 @@ def check_inn_checksum(inn_str):
             return checksum == digits[-1]
 
         elif length == 12:
-            # Физлица
             weights1 = [7, 2, 4, 10, 3, 5, 9, 4, 6, 8]
             weights2 = [3, 7, 2, 4, 10, 3, 5, 9, 4, 6, 8]
 
@@ -149,11 +144,13 @@ def check_inn_checksum(inn_str):
     except Exception:
         return False
 
-# --- Роль 6: Инженер качества данных ---
+
+# Role 6: Data Quality Engineer
 
 def normalize_and_validate(text):
     """
-    Приводит данные к единому формату и проверяет их (Телефоны, Даты, ИНН).
+    It converts data to a unified format and checks it
+    (Phones, Dates, TIN).
     """
     result = {
         'phones': {'valid': [], 'invalid': []},
@@ -161,7 +158,7 @@ def normalize_and_validate(text):
         'inn': {'valid': [], 'invalid': []}
     }
 
-    # --- 1. ТЕЛЕФОНЫ ---
+    # 1. PHONES
     try:
         phone_candidates = re.finditer(r'(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{2}[-.\s]?\d{2}', text)
 
@@ -171,24 +168,22 @@ def normalize_and_validate(text):
 
             is_valid = False
 
-            # Проверка Российских номеров
             if re.match(r'^(\+7|8)\d{10}$', clean_phone):
                 is_valid = True
-            # Международные форматы
             elif re.match(r'^\+\d{9,14}$', clean_phone):
                 if clean_phone.startswith('+0'):
                     is_valid = False
                 else:
                     is_valid = True
 
-            # Фильтрация от ИНН/Карт
+            # Filtering by TIN/Card
             digits_only = re.sub(r'\D', '', clean_phone)
             if len(digits_only) in [10, 12] and '+' not in raw_phone and '(' not in raw_phone and '-' not in raw_phone:
                 if not (digits_only.startswith('79') or digits_only.startswith('89')):
                     continue
 
             if is_valid:
-                result['phones']['valid'].append(raw_phone)  # Сохраняем исходный вид для вывода
+                result['phones']['valid'].append(raw_phone)
             else:
                 if len(digits_only) > 6:
                     result['phones']['invalid'].append(raw_phone)
@@ -196,7 +191,7 @@ def normalize_and_validate(text):
     except Exception as e:
         print(f"Ошибка валидации телефонов: {e}")
 
-    # --- 2. ИНН ---
+    # 2. INN
     try:
         inn_candidates = re.finditer(r'\b\d{10}\b|\b\d{12}\b', text)
 
@@ -215,13 +210,12 @@ def normalize_and_validate(text):
     except Exception as e:
         print(f"Ошибка валидации ИНН: {e}")
 
-    # # --- 3. ДАТЫ ---
+    # 3. DATES
 
     dates = re.findall(r'\b\d{1,2}[./-]\d{1,2}[./-]\d{2,4}\b', text)
 
     for date in dates:
         try:
-            # Пробуем формат ДД.ММ.ГГГГ
             normalized = datetime.strptime(date,
                                            "%d.%m.%Y" if '.' in date
                                            else "%d-%m-%Y"
@@ -230,7 +224,6 @@ def normalize_and_validate(text):
             result['dates']['normalized'].append(date)  # сохраняем исходную дату
         except:
             try:
-                # Пробуем формат ММ.ДД.ГГГГ
                 normalized = datetime.strptime(date,
                                                "%m.%d.%Y" if '.' in date
                                                else "%m-%d-%Y"
@@ -245,9 +238,9 @@ def normalize_and_validate(text):
 
 def main():
     """
-    Основная логика запуска. Читает файл, запускает проверки, пишет отчеты.
+    Basic startup logic. Reads a file,
+    runs checks, and writes reports.
     """
-    # Используем junk.txt как в условии
     input_file = "Текстовый документ.txt"
     artifacts_file = "artifacts.txt"
 
@@ -257,13 +250,13 @@ def main():
 
         print(f"--- Запуск анализа файла {input_file} ---\n")
 
-        # 1. Карты
+        # 1. Cards
         cards_result = find_and_validate_credit_cards(text)
         print(f"[{len(cards_result['valid'])}] ВАЛИДНЫЕ КАРТЫ (Luhn OK):")
         for c in cards_result['valid']:
             print(f"  {c}")
 
-        # 2. Логи
+        # 2. Logins
         logs_result = analyze_logs(text)
         print(f"\n[{sum(len(v) for v in logs_result.values())}] НАЙДЕННЫЕ УГРОЗЫ В ЛОГАХ:")
         for category, items in logs_result.items():
@@ -272,7 +265,7 @@ def main():
                 for item in items:
                     print(f"    - {item}")
 
-        # 3. Данные
+        # 3. Data
         norm_result = normalize_and_validate(text)
 
         print(f"\n[{len(norm_result['inn']['valid'])}] ВАЛИДНЫЕ ИНН:")
@@ -287,7 +280,7 @@ def main():
         for date in norm_result['dates']['normalized']:
             print(f"  {date}")
 
-        # --- Сбор всех уникальных артефактов (INVALID) ---
+        # Collecting all unique artifacts (INVALID)
         unique_artifacts = set()
 
         unique_artifacts.update(cards_result['invalid'])
@@ -295,7 +288,7 @@ def main():
         unique_artifacts.update(norm_result['phones']['invalid'])
         unique_artifacts.update(norm_result['dates']['invalid'])
 
-        # Добавляем атаки из логов как артефакты
+        # Adding attacks from logs as artifacts
         for k, v in logs_result.items():
             unique_artifacts.update(v)
 
