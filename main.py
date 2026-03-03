@@ -221,7 +221,7 @@ def normalize_and_validate(text):
                                            else "%d-%m-%Y"
                                            if '-' in date
                                            else "%d/%m/%Y")
-            result['dates']['normalized'].append(date)  # сохраняем исходную дату
+            result['dates']['normalized'].append(date) 
         except:
             try:
                 normalized = datetime.strptime(date,
@@ -229,7 +229,7 @@ def normalize_and_validate(text):
                                                else "%m-%d-%Y"
                                                if '-' in date
                                                else "%m/%d/%Y")
-                result['dates']['normalized'].append(date)  # сохраняем исходную дату
+                result['dates']['normalized'].append(date)  
             except:
                 result['dates']['invalid'].append(date)
 
@@ -310,3 +310,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
