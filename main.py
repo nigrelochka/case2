@@ -33,7 +33,8 @@ def find_and_validate_credit_cards(text):
 
     try:
         # Potential cards
-        card_pattern = re.compile(r'(?:\b\d{4}[ -]?\d{4}[ -]?\d{4}[ -]?\d{1,4}\b)')
+        card_pattern = re.compile(r'(?:\b\d{4}[ -]?\d{4}[ -]?'
+                                  r'\d{4}[ -]?\d{1,4}\b)')
 
         # Cards mixed with letters
         mixed_pattern = re.compile(r'\b[0-9A-Za-zА-Яа-я-]{15,20}\b')
@@ -83,10 +84,13 @@ def analyze_logs(text):
         'failed_logins': []
     }
 
-    sql_pattern = re.compile(r"(UNION|SELECT|DROP|INSERT|DELETE|--|' OR '1'='1)", re.I)
-    xss_pattern = re.compile(r"(<script>|</script>|javascript:|onerror=)", re.I)
+    sql_pattern = re.compile(r"(UNION|SELECT|DROP|INSERT|DELETE|--|'"
+                             r" OR '1'='1)", re.I)
+    xss_pattern = re.compile(r"(<script>|</script>|javascript:"
+                             r"|onerror=)", re.I)
     agent_pattern = re.compile(r"(sqlmap|curl|wget|nikto)", re.I)
-    failed_pattern = re.compile(r"(401|authentication failed|invalid password)", re.I)
+    failed_pattern = re.compile(r"(401|authentication failed"
+                                r"|invalid password)", re.I)
 
     try:
         for line in text.splitlines():
@@ -160,7 +164,9 @@ def normalize_and_validate(text):
 
     # 1. PHONES
     try:
-        phone_candidates = re.finditer(r'(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{2}[-.\s]?\d{2}', text)
+        phone_candidates = re.finditer(r'(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?'
+                                       r'[-.\s]?\d{3}[-.\s]?\d{2}[-.\s]?\d{2}'
+                                       , text)
 
         for match in phone_candidates:
             raw_phone = match.group(0)
@@ -178,8 +184,10 @@ def normalize_and_validate(text):
 
             # Filtering by TIN/Card
             digits_only = re.sub(r'\D', '', clean_phone)
-            if len(digits_only) in [10, 12] and '+' not in raw_phone and '(' not in raw_phone and '-' not in raw_phone:
-                if not (digits_only.startswith('79') or digits_only.startswith('89')):
+            if (len(digits_only) in [10, 12] and '+' not in raw_phone and
+                    '(' not in raw_phone and '-' not in raw_phone):
+                if not (digits_only.startswith('79') or 
+                        digits_only.startswith('89')):
                     continue
 
             if is_valid:
@@ -221,7 +229,7 @@ def normalize_and_validate(text):
                                            else "%d-%m-%Y"
                                            if '-' in date
                                            else "%d/%m/%Y")
-            result['dates']['normalized'].append(date) 
+            result['dates']['normalized'].append(date)  
         except:
             try:
                 normalized = datetime.strptime(date,
@@ -229,7 +237,7 @@ def normalize_and_validate(text):
                                                else "%m-%d-%Y"
                                                if '-' in date
                                                else "%m/%d/%Y")
-                result['dates']['normalized'].append(date)  
+                result['dates']['normalized'].append(date) 
             except:
                 result['dates']['invalid'].append(date)
 
@@ -258,7 +266,8 @@ def main():
 
         # 2. Logins
         logs_result = analyze_logs(text)
-        print(f"\n[{sum(len(v) for v in logs_result.values())}] НАЙДЕННЫЕ УГРОЗЫ В ЛОГАХ:")
+        print(f"\n[{sum(len(v) for v in logs_result.values())}] "
+              f"НАЙДЕННЫЕ УГРОЗЫ В ЛОГАХ:")
         for category, items in logs_result.items():
             if items:
                 print(f"  > {category}:")
@@ -276,7 +285,8 @@ def main():
         for ph in norm_result['phones']['valid']:
             print(f"  {ph}")
 
-        print(f"\n[{len(norm_result['dates']['normalized'])}] ВАЛИДНЫЕ ДАТЫ (нормализованные):")
+        print(f"\n[{len(norm_result['dates']['normalized'])}] "
+              f"ВАЛИДНЫЕ ДАТЫ (нормализованные):")
         for date in norm_result['dates']['normalized']:
             print(f"  {date}")
 
@@ -293,21 +303,23 @@ def main():
             unique_artifacts.update(v)
 
         print(f"\n------------------------------------------------")
-        print(f"Количество уникальных артефактов (сохранено в файл): {len(unique_artifacts)}")
+        print(f"Количество уникальных артефактов (сохранено в файл):"
+              f" {len(unique_artifacts)}")
 
         with open(artifacts_file, "w", encoding="utf-8") as f_out:
-            f_out.write("--- REPORT: INVALID ARTIFACTS & SUSPICIOUS DATA ---\n")
+            f_out.write("--- REPORT: INVALID ARTIFACTS & "
+                        "SUSPICIOUS DATA ---\n")
             for item in sorted(unique_artifacts):
                 f_out.write(f"{item}\n")
 
         print(f"Файл {artifacts_file} успешно записан.")
 
     except FileNotFoundError:
-        print(f"ОШИБКА: Файл {input_file} не найден. Пожалуйста, создайте его.")
+        print(f"ОШИБКА: Файл {input_file} не найден. "
+              f"Пожалуйста, создайте его.")
     except Exception as e:
         print(f"КРИТИЧЕСКАЯ ОШИБКА: {e}")
 
 
 if __name__ == "__main__":
     main()
-
