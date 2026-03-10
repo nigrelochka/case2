@@ -2,7 +2,6 @@ import re
 import ipaddress
 import base64
 import codecs
-import os
 from datetime import datetime
 from typing import Dict, List
 
@@ -48,7 +47,7 @@ def find_and_validate_credit_cards(text):
         print(f"Ошибка в поиске карт: {e}")
     return result
 
-def find_secrets(text: str) -> Dict[str, List[str]]:
+def find_secrets(text):
     """Поиск API-ключей, паролей и токенов"""
     result = {'api_keys': [], 'passwords': [], 'tokens': []}
     patterns = [
@@ -74,7 +73,7 @@ def find_secrets(text: str) -> Dict[str, List[str]]:
     return result
 
 
-def find_system_info(text: str) -> Dict[str, List[str]]:
+def find_system_info(text):
     """Поиск IP, файлов и email"""
     result = {'ips': [], 'files': [], 'emails': []}
 
@@ -106,7 +105,7 @@ def find_system_info(text: str) -> Dict[str, List[str]]:
     return result
 
 
-def try_decode_base64(s: str) -> str:
+def try_decode_base64(s):
     s = s.strip()
     if len(s) < 4 or not re.match(r'^[A-Za-z0-9+/]+=*$', s):
         return ""
@@ -121,7 +120,7 @@ def try_decode_base64(s: str) -> str:
     return ""
 
 
-def try_decode_hex(s: str) -> str:
+def try_decode_hex(s):
     clean = re.sub(r'(0x|\\x|\s)', '', s)
     if not clean or len(clean) % 2 != 0 or not re.match(r'^[0-9A-Fa-f]+$', clean):
         return ""
@@ -134,7 +133,7 @@ def try_decode_hex(s: str) -> str:
     return ""
 
 
-def decode_messages(text: str) -> Dict[str, List[Dict[str, str]]]:
+def decode_messages(text):
     """Поиск и декодирование скрытых сообщений"""
     result = {'base64': [], 'hex': [], 'rot13': []}
     seen = {'base64': set(), 'hex': set(), 'rot13': set()}
@@ -183,7 +182,7 @@ def decode_messages(text: str) -> Dict[str, List[Dict[str, str]]]:
     return result
 
 
-def find_artifacts(text: str, valid_data: set) -> List[str]:
+def find_artifacts(text,valid_data):
     """Поиск невалидных данных (артефактов)"""
     artifacts = []
 
