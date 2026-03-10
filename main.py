@@ -1,10 +1,12 @@
-
 def main():
-    # --- ИЗМЕНЕНО: список файлов для анализа ---
-    input_files = ["text1.txt", "text2.txt", "text3.txt", "text4.txt"] # Добавьте сюда свои файлы
+    NUMBER_OF_FILES = 2 
+    input_files = []
+    for i in range(1, NUMBER_OF_FILES + 1): # i будет от 1 до NUMBER_OF_FILES включительно
+        filename = 'text' + str(i) + '.txt'
+        input_files.append(filename)
+
     artifacts_file = "artifacts.txt"
 
-    # --- ИЗМЕНЕНО: переменные для хранения общих результатов ---
     all_cards_result = {'valid': [], 'invalid': []}
     all_logs_result = {
         'sql_injections': [],
@@ -24,7 +26,6 @@ def main():
 
     print(f"--- Запуск анализа файлов {', '.join(input_files)} ---\n")
 
-    # --- ЦИКЛ ПО ВСЕМ ФАЙЛАМ ---
     for input_file in input_files:
         try:
             with open(input_file, "r", encoding="utf-8") as file:
@@ -72,7 +73,6 @@ def main():
                 all_decoded[key].extend(decoded[key])
 
 
-            # --- ВЫВОД РЕЗУЛЬТАТОВ ПО ТЕКУЩЕМУ ФАЙЛУ (опционально) ---
             print(f"  [{len(cards_result['valid'])}] ВАЛИДНЫЕ КАРТЫ (Luhn OK): {cards_result['valid'][:3]}...") # Показываем первые 3
             print(f"  [{len(secrets['api_keys'])}] API-ключи: {secrets['api_keys'][:3]}...") # Показываем первые 3
             print(f"  [{len(system_info['ips'])}] IP-адреса: {system_info['ips'][:3]}...") # Показываем первые 3
